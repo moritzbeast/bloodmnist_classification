@@ -3,14 +3,15 @@ import pandas as pd
 from sklearn.model_selection import train_test_split, StratifiedKFold
 
 
-def load_image_data(dataset_path="data/Labeled", labels=("0", "1", "2", "3", "4")):
+def load_image_data(dataset_path="data/Labeled", labels=("0", "1", "2", "3", "4", "5", "6", "7")):
     # save data in pandas dataframe
     image_data = []
 
     for label in labels:
         label_path = os.path.join(dataset_path, label)
 
-        for image in os.listdir(label_path):
+        # sorted so splits are reproducible on different devices
+        for image in sorted(os.listdir(label_path)):
             image_path = os.path.join(label_path, image)
             image_data.append((image_path, label))
 
