@@ -19,7 +19,7 @@ class MyModel(torch.nn.Module):
             self.model = models.resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
 
         # change the number of outputs according to our problem
-        self.model.fc = nn.Linear(self.model.fc.in_features, 5)
+        self.model.fc = nn.Linear(self.model.fc.in_features, 8)
 
     def forward(self, x):
         return self.model(x)

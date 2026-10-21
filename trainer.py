@@ -42,7 +42,7 @@ def train_model(model, train_loader, val_loader, fold):
         all_probs = []
 
         for batch in train_loader:
-            inputs = batch["xray"].to(device)
+            inputs = batch["img"].to(device)
             labels = batch["target"].to(device)
 
             optimizer.zero_grad()
@@ -88,7 +88,7 @@ def validate_model(model, val_loader, criterion):
 
     with torch.no_grad():
         for batch in val_loader:
-            inputs = batch["xray"].to(device)
+            inputs = batch["img"].to(device)
             labels = batch["target"].to(device)
 
             outputs = model(inputs)

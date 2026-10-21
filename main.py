@@ -1,7 +1,7 @@
 from args import *
 import pandas as pd
 import os
-from dataset import knee_xray_dataset, compute_mean_std
+from dataset import bloodmnist_dataset, compute_mean_std
 from torch.utils.data import DataLoader
 from model import MyModel
 from trainer import train_model
@@ -18,10 +18,10 @@ for fold in range(5):
 
     # 3. Preparing Dataset
     mean, std = compute_mean_std(train_set)
-    print(f"Mean: {mean:.4f}, Std: {std:.4f}")
+    print(f"Mean: {mean.round(4)}, Std: {std.round(4)}")
 
-    train_dataset = knee_xray_dataset(train_set, mean, std)
-    val_dataset = knee_xray_dataset(val_set, mean, std)
+    train_dataset = bloodmnist_dataset(train_set, mean, std)
+    val_dataset = bloodmnist_dataset(val_set, mean, std)
 
     # 4. Create dataloaders
     train_loader = DataLoader(train_dataset, batch_size=args.bs, shuffle=True)

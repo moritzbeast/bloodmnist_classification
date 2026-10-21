@@ -10,9 +10,9 @@ def get_args():
 
     parser.add_argument("-csv_dir", type=str, default="data/CSVs")
 
-    parser.add_argument("-epochs", type=int, default=20)
+    parser.add_argument("-epochs", type=int, default=5)
 
-    parser.add_argument("-bs", type=int, default=16,
+    parser.add_argument("-bs", type=int, default=64,
                         choices=[16, 32, 64, 128])
 
     parser.add_argument("-lr", type=float, default=1e-4,
