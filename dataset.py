@@ -5,35 +5,47 @@ import numpy as np
 import torch
 
 def read_img(path_file):
-    xray = cv2.imread(path_file, cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread(path_file, cv2.IMREAD_COLOR)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    return xray
+    return img
 
 def compute_mean_std(dataset):
-    # mean and std over all pixels of the given images (scaled to 0-1)
-    imgs = np.stack([read_img(path) for path in dataset["image_path"]]) / 255.0
+    # mean and std for all channels of the given image (scaled to 0-1)
+    sum = np.zeros(3)
+    sq_sum = np.zeros(3)
 
-    return imgs.mean(), imgs.std()
+    for path in dataset["image_path"]:
+        img = read_img(path) / 255.0
+        sum += img.sum(axis=(0,1))
+        sq_sum += (img ** 2).sum(axis=(0,1))
 
-class knee_xray_dataset(Dataset):
+    n_pixels = len(dataset) * img.shape[0] * img.shape[1]
+    mean = sum / n_pixels
+    std = np.sqrt(sq_sum / n_pixels - mean ** 2)
+
+    return mean, std
+
+class bloodmnist_dataset(Dataset):
     def __init__(self, dataset, mean, std):
         self.dataset = dataset
-        self.mean = mean
-        self.std = std
+        # shape (3, 1, 1), so every channel is normalized with its own value
+        self.mean = torch.tensor(mean, dtype=torch.float32).view(3, 1, 1)
+        self.std = torch.tensor(std, dtype=torch.float32).view(3, 1, 1)
 
     def __len__(self):
         return (len(self.dataset))
 
     def __getitem__(self, index):
         img = read_img(self.dataset["image_path"].iloc[index])
-        img = torch.from_numpy(img).float() / 255.0
+        # (H, W, C) -> (C, H, W), PyTorch expects the channels first
+        img = torch.from_numpy(img).permute(2, 0, 1).float() / 255
         img = (img - self.mean) / self.std
-        img = img.unsqueeze(0).repeat(3, 1, 1)
         name = (self.dataset["image_path"].iloc[index]).split("/")[-1]
         target = self.dataset["label"].iloc[index]
 
         res = {
-            "xray": img,
+            "img": img,
             "name": name,
             "target": target
         }
