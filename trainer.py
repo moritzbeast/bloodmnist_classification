@@ -23,12 +23,12 @@ def compute_metrics(labels, probs):
 
     return bal_acc, roc_auc, avg_prec
 
-def train_model(model, train_loader, val_loader, fold, run_dir):
+def train_model(model, train_loader, val_loader, fold):
     model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
 
-    os.makedirs(run_dir, exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
     best_bal_acc = -1
 
     history = {key: [] for key in ["train_loss", "train_bal_acc", "train_roc_auc", "train_avg_prec",
@@ -74,10 +74,10 @@ def train_model(model, train_loader, val_loader, fold, run_dir):
         
         if val_bal_acc > best_bal_acc:
             best_bal_acc = val_bal_acc
-            torch.save(model.state_dict(), os.path.join(run_dir, f"best_model_fold_{fold}.pth"))
+            torch.save(model.state_dict(), os.path.join(args.output_dir, f"best_model_fold_{fold}.pth"))
             print(f"New best model saved (Balanced Acc: {best_bal_acc:.4f})")
 
-    plot_metrics(history, fold, run_dir)
+    plot_metrics(history, fold)
 
 def validate_model(model, val_loader, criterion):
     model.eval()
@@ -111,7 +111,7 @@ def validate_model(model, val_loader, criterion):
 
     return validation_loss, bal_acc, roc_auc, avg_prec
 
-def plot_metrics(history, fold, run_dir):
+def plot_metrics(history, fold):
     metrics = [("loss", "Loss"),
                ("bal_acc", "Balanced Accuracy"),
                ("roc_auc", "ROC-AUC"),
@@ -134,7 +134,7 @@ def plot_metrics(history, fold, run_dir):
 
     fig.suptitle(f"Fold {fold}")
     fig.tight_layout()
-    fig.savefig(os.path.join(run_dir, f"metrics_fold_{fold}.png"), dpi=150)
+    fig.savefig(os.path.join(args.output_dir, f"metrics_fold_{fold}.png"), dpi=150)
     plt.close(fig)
 
 

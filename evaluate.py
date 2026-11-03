@@ -19,12 +19,7 @@ CLASS_NAMES = ["basophil", "eosinophil", "erythroblast", "immature gran.",
 args = get_args()
 test_set = pd.read_csv(os.path.join(args.csv_dir, "test.csv"))
 
-# find run folder: -output_dir itself if it contains the models, else the newest timestamp folder in it
-run_dir = args.output_dir
-if not os.path.exists(os.path.join(run_dir, "best_model_fold_0.pth")):
-    runs = sorted(d for d in os.listdir(run_dir) if os.path.isdir(os.path.join(run_dir, d)))
-    run_dir = os.path.join(run_dir, runs[-1])
-print(f"Evaluating run: {run_dir}")
+print(f"Evaluating run: {args.output_dir}")
 
 # use mac gpu
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -44,7 +39,7 @@ for fold in range(5):
 
     # load model, load best_model_fold_k.pth, model.eval()
     model = MyModel(backbone=args.backbone)
-    weight_path = os.path.join(run_dir, f"best_model_fold_{fold}.pth")
+    weight_path = os.path.join(args.output_dir, f"best_model_fold_{fold}.pth")
     model.load_state_dict(torch.load(weight_path, map_location=device))
     model.to(device)
     model.eval()
@@ -91,7 +86,7 @@ summary = pd.DataFrame([
 ])
 results = pd.concat([results, summary], ignore_index=True)
 
-results.to_csv(os.path.join(run_dir, "test_metrics.csv"), index=False)
+results.to_csv(os.path.join(args.output_dir, "test_metrics.csv"), index=False)
 print(results.round(4))
 
 # plot confusion matrix 
@@ -105,7 +100,7 @@ for ax, normalize, title in zip(axes, [None, "true"], ["Counts", "Normalized per
     ax.set_title(title)
 
 fig.tight_layout()
-fig.savefig(os.path.join(run_dir, "confusion_matrix.png"), dpi=150)
+fig.savefig(os.path.join(args.output_dir, "confusion_matrix.png"), dpi=150)
 plt.close(fig)
 
 # plot examples
@@ -127,5 +122,5 @@ for ax, idx in zip(axes.flat, chosen):
                  f"pred: {CLASS_NAMES[pred]} ({ensemble_probs[idx, pred]:.2f})", fontsize=9)
 
 fig.tight_layout()
-fig.savefig(os.path.join(run_dir, "misclassified_examples.png"), dpi=150)
+fig.savefig(os.path.join(args.output_dir, "misclassified_examples.png"), dpi=150)
 plt.close(fig)

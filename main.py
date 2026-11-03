@@ -1,7 +1,6 @@
 from args import *
 import pandas as pd
 import os
-from datetime import datetime
 from dataset import bloodmnist_dataset, compute_mean_std
 from torch.utils.data import DataLoader
 from model import MyModel
@@ -9,11 +8,6 @@ from trainer import train_model
 
 # 1. We need the arguments
 args = get_args()
-
-# own folder for each run (timestamp), so old runs are not overwritten
-timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-run_dir = os.path.join(args.output_dir, timestamp)
-print(f"Saving run to: {run_dir}")
 
 # 2. Iterate over each fold
 for fold in range(5):
@@ -37,4 +31,4 @@ for fold in range(5):
     model = MyModel(backbone=args.backbone)
 
     # 6. Train the model
-    train_model(model, train_loader, val_loader, fold, run_dir)
+    train_model(model, train_loader, val_loader, fold)
