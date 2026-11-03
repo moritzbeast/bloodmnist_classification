@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import cv2
 import numpy as np
 import torch
+import os
 
 def read_img(path_file):
     img = cv2.imread(path_file, cv2.IMREAD_COLOR)

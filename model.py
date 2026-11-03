@@ -10,7 +10,7 @@ class MyModel(torch.nn.Module):
 
         # load weights pretrained on ImageNet
         if backbone == "resnet18":
-            self.model = models.resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+            self.model = models.resnet18(weights=None)
 
         elif backbone == "resnet34":
             self.model = models.resnet34(weights=ResNet34_Weights.IMAGENET1K_V1)

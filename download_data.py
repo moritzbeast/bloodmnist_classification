@@ -5,7 +5,7 @@ import numpy as np
 from medmnist import BloodMNIST
 
 
-def download_data(raw_dir="data/raw", dataset_path="data/Labeled", size=128):
+def download_data(raw_dir="data/raw", dataset_path="data/Labeled", size=28):
     os.makedirs(raw_dir, exist_ok=True)
 
     # merge the official splits to create own splits in create_folds.py
@@ -32,7 +32,7 @@ def download_data(raw_dir="data/raw", dataset_path="data/Labeled", size=128):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download BloodMNIST and save it as png images")
-    parser.add_argument("-size", type=int, default=128, choices=[28, 64, 128, 224])
+    parser.add_argument("-size", type=int, default=28, choices=[28, 64, 128, 224])
     args = parser.parse_args()
 
     download_data(size=args.size)
