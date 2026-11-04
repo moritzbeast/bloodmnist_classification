@@ -7,6 +7,8 @@ from medmnist import BloodMNIST
 
 def download_data(raw_dir="data/raw", dataset_path="data/Labeled", size=28):
     os.makedirs(raw_dir, exist_ok=True)
+    # own folder for each image size, e.g. data/Labeled/128
+    dataset_path = os.path.join(dataset_path, str(size))
 
     # merge the official splits to create own splits in create_folds.py
     images, labels = [], []

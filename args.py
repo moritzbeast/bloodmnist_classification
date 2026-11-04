@@ -10,6 +10,9 @@ def get_args():
 
     parser.add_argument("-csv_dir", type=str, default="data/CSVs")
 
+    parser.add_argument("-img_size", type=int, default=128,
+                        choices=[28, 128])
+
     parser.add_argument("-epochs", type=int, default=15)
 
     parser.add_argument("-bs", type=int, default=64,

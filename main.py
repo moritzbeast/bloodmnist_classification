@@ -8,13 +8,15 @@ from trainer import train_model
 
 # 1. We need the arguments
 args = get_args()
+# CSVs of the chosen image size, e.g. data/CSVs/128
+csv_dir = os.path.join(args.csv_dir, str(args.img_size))
 
 # 2. Iterate over each fold
 for fold in range(5):
     print(f"Fold {fold}")
 
-    train_set = pd.read_csv(os.path.join(args.csv_dir, f"train_fold_{fold}.csv"))
-    val_set = pd.read_csv(os.path.join(args.csv_dir, f"val_fold_{fold}.csv"))
+    train_set = pd.read_csv(os.path.join(csv_dir, f"train_fold_{fold}.csv"))
+    val_set = pd.read_csv(os.path.join(csv_dir, f"val_fold_{fold}.csv"))
 
     # 3. Preparing Dataset
     mean, std = compute_mean_std(train_set)

@@ -17,7 +17,9 @@ CLASS_NAMES = ["basophil", "eosinophil", "erythroblast", "immature gran.",
 
 # load test data (test.csv) and args
 args = get_args()
-test_set = pd.read_csv(os.path.join(args.csv_dir, "test.csv"))
+# CSVs of the chosen image size, e.g. data/CSVs/128
+csv_dir = os.path.join(args.csv_dir, str(args.img_size))
+test_set = pd.read_csv(os.path.join(csv_dir, "test.csv"))
 
 print(f"Evaluating run: {args.output_dir}")
 
@@ -31,7 +33,7 @@ fold_metrics = []
 # for each fold:
 for fold in range(5):
     # compute mean/std from train_fold_k (same normalization as in training)
-    train_set = pd.read_csv(os.path.join(args.csv_dir, f"train_fold_{fold}.csv"))
+    train_set = pd.read_csv(os.path.join(csv_dir, f"train_fold_{fold}.csv"))
     mean, std = compute_mean_std(train_set)
     # create test dataset + dataloader with these stats
     test_dataset = bloodmnist_dataset(test_set, mean, std)
