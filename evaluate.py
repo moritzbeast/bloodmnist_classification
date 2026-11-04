@@ -17,7 +17,7 @@ CLASS_NAMES = ["basophil", "eosinophil", "erythroblast", "immature gran.",
 
 # load test data (test.csv) and args
 args = get_args()
-# CSVs of the chosen image size, e.g. data/CSVs/128
+# CSVs of the chosen image size
 csv_dir = os.path.join(args.csv_dir, str(args.img_size))
 test_set = pd.read_csv(os.path.join(csv_dir, "test.csv"))
 

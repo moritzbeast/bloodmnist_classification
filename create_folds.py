@@ -19,7 +19,7 @@ def load_image_data(dataset_path="data/Labeled", labels=("0", "1", "2", "3", "4"
 
 
 def create_folds(csv_dir="data/CSVs", dataset_path="data/Labeled", size=128, n_splits=5, seed=42):
-    # own folders for each image size, e.g. data/Labeled/128 -> data/CSVs/128
+    # own folders for each image size
     dataset_path = os.path.join(dataset_path, str(size))
     csv_dir = os.path.join(csv_dir, str(size))
     os.makedirs(csv_dir, exist_ok=True)
