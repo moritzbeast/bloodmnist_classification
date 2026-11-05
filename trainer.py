@@ -3,7 +3,7 @@ from args import *
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from sklearn.metrics import balanced_accuracy_score, roc_auc_score, average_precision_score
+from sklearn.metrics import balanced_accuracy_score, accuracy_score, roc_auc_score, average_precision_score
 from sklearn.preprocessing import label_binarize
 import numpy as np
 import matplotlib
@@ -11,17 +11,22 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 args = get_args()
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available()
+    else "cpu"
+)
 
 def compute_metrics(labels, probs):
     classes = list(range(probs.shape[1]))
     preds = probs.argmax(axis=1)
 
     bal_acc = balanced_accuracy_score(labels, preds)
+    acc = accuracy_score(labels, preds)
     roc_auc = roc_auc_score(labels, probs, multi_class="ovr", labels=classes)
     avg_prec = average_precision_score(label_binarize(labels, classes=classes), probs, average="macro")
 
-    return bal_acc, roc_auc, avg_prec
+    return bal_acc, acc, roc_auc, avg_prec
 
 def train_model(model, train_loader, val_loader, fold):
     model.to(device)
@@ -58,13 +63,13 @@ def train_model(model, train_loader, val_loader, fold):
             all_probs.append(probs.cpu().numpy())
 
         train_loss = running_loss/len(train_loader)
-        train_bal_acc, train_roc_auc, train_avg_prec = compute_metrics(np.concatenate(all_labels), np.concatenate(all_probs))
+        train_bal_acc, train_acc, train_roc_auc, train_avg_prec = compute_metrics(np.concatenate(all_labels), np.concatenate(all_probs))
 
         print(f"Epoch {epoch+1}/{args.epochs}")
-        print(f"Training Loss: {train_loss:.4f} | Balanced Acc: {train_bal_acc:.4f} | "
+        print(f"Training Loss: {train_loss:.4f} | Balanced Acc: {train_bal_acc:.4f} | Acc: {train_acc:.4f} | "
               f"ROC-AUC: {train_roc_auc:.4f} | Avg Precision: {train_avg_prec:.4f}")
-        
-        val_loss, val_bal_acc, val_roc_auc, val_avg_prec = validate_model(model, val_loader, criterion)
+
+        val_loss, val_bal_acc, val_acc, val_roc_auc, val_avg_prec = validate_model(model, val_loader, criterion)
 
         for key, value in [("train_loss", train_loss), ("train_bal_acc", train_bal_acc),
                            ("train_roc_auc", train_roc_auc), ("train_avg_prec", train_avg_prec),
@@ -74,10 +79,15 @@ def train_model(model, train_loader, val_loader, fold):
         
         if val_bal_acc > best_bal_acc:
             best_bal_acc = val_bal_acc
+            # validation metrics of the best epoch, collected in main.py for val_metrics.csv
+            best_metrics = {"fold": fold, "best_epoch": epoch + 1, "bal_acc": val_bal_acc, "acc": val_acc,
+                            "roc_auc": val_roc_auc, "avg_prec": val_avg_prec}
             torch.save(model.state_dict(), os.path.join(args.output_dir, f"best_model_fold_{fold}.pth"))
             print(f"New best model saved (Balanced Acc: {best_bal_acc:.4f})")
 
     plot_metrics(history, fold)
+
+    return best_metrics
 
 def validate_model(model, val_loader, criterion):
     model.eval()
@@ -104,12 +114,12 @@ def validate_model(model, val_loader, criterion):
     all_probs = np.concatenate(all_probs)
 
     validation_loss = running_loss/len(val_loader)
-    bal_acc, roc_auc, avg_prec = compute_metrics(all_labels, all_probs)
+    bal_acc, acc, roc_auc, avg_prec = compute_metrics(all_labels, all_probs)
 
-    print(f"Validation Loss: {validation_loss:.4f} | Balanced Acc: {bal_acc:.4f} | "
+    print(f"Validation Loss: {validation_loss:.4f} | Balanced Acc: {bal_acc:.4f} | Acc: {acc:.4f} | "
           f"ROC-AUC: {roc_auc:.4f} | Avg Precision: {avg_prec:.4f}")
 
-    return validation_loss, bal_acc, roc_auc, avg_prec
+    return validation_loss, bal_acc, acc, roc_auc, avg_prec
 
 def plot_metrics(history, fold):
     metrics = [("loss", "Loss"),

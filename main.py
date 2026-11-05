@@ -1,6 +1,9 @@
 from args import *
 import pandas as pd
 import os
+import random
+import numpy as np
+import torch
 from dataset import bloodmnist_dataset, compute_mean_std
 from torch.utils.data import DataLoader
 from model import MyModel
@@ -11,9 +14,16 @@ args = get_args()
 # CSVs of the chosen image size, e.g. data/CSVs/128
 csv_dir = os.path.join(args.csv_dir, str(args.img_size))
 
+fold_metrics = []
+
 # 2. Iterate over each fold
 for fold in range(5):
     print(f"Fold {fold}")
+
+    # same random start in every run (initial weights, shuffling)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
 
     train_set = pd.read_csv(os.path.join(csv_dir, f"train_fold_{fold}.csv"))
     val_set = pd.read_csv(os.path.join(csv_dir, f"val_fold_{fold}.csv"))
@@ -33,4 +43,17 @@ for fold in range(5):
     model = MyModel(backbone=args.backbone)
 
     # 6. Train the model
-    train_model(model, train_loader, val_loader, fold)
+    fold_metrics.append(train_model(model, train_loader, val_loader, fold))
+
+# 7. Save validation metrics of the best epoch per fold (+ mean and std)
+results = pd.DataFrame(fold_metrics)
+metric_cols = ["bal_acc", "acc", "roc_auc", "avg_prec"]
+
+summary = pd.DataFrame([
+    {"fold": "mean", **results[metric_cols].mean().to_dict()},
+    {"fold": "std", **results[metric_cols].std().to_dict()},
+])
+results = pd.concat([results, summary], ignore_index=True)
+
+results.to_csv(os.path.join(args.output_dir, "val_metrics.csv"), index=False)
+print(results.round(4))

@@ -24,7 +24,11 @@ test_set = pd.read_csv(os.path.join(csv_dir, "test.csv"))
 print(f"Evaluating run: {args.output_dir}")
 
 # use mac gpu
-device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available()
+    else "cpu"
+)
 print(f"Using device: {device}")
 
 all_fold_probs = []
@@ -62,24 +66,24 @@ for fold in range(5):
     labels = np.concatenate(labels)
 
     # compute metrics for this folds
-    bal_acc, roc_auc, avg_prec = compute_metrics(labels, probs)
-    print(f"Fold {fold} | Balanced Acc: {bal_acc:.4f} | ROC-AUC: {roc_auc:.4f} | Avg Precision: {avg_prec:.4f}")
+    bal_acc, acc, roc_auc, avg_prec = compute_metrics(labels, probs)
+    print(f"Fold {fold} | Balanced Acc: {bal_acc:.4f} | Acc: {acc:.4f} | ROC-AUC: {roc_auc:.4f} | Avg Precision: {avg_prec:.4f}")
 
     all_fold_probs.append(probs)
-    fold_metrics.append({"fold": fold, "bal_acc": bal_acc, "roc_auc": roc_auc, "avg_prec": avg_prec})
+    fold_metrics.append({"fold": fold, "bal_acc": bal_acc, "acc": acc, "roc_auc": roc_auc, "avg_prec": avg_prec})
 
 # ensemble: average the probabilities of all 5 models
 ensemble_probs = np.mean(all_fold_probs, axis=0)   # (5, 3419, 8) -> (3419, 8)
 ensemble_preds = ensemble_probs.argmax(axis=1)     # one label for each image
 
 # compute metrics for the ensemble 
-bal_acc, roc_auc, avg_prec = compute_metrics(labels, ensemble_probs)
-print(f"Ensemble | Balanced Acc: {bal_acc:.4f} | ROC-AUC: {roc_auc:.4f} | Avg Precision: {avg_prec:.4f}")
-ensemble_metrics = {"fold": "ensemble", "bal_acc": bal_acc, "roc_auc": roc_auc, "avg_prec": avg_prec}
+bal_acc, acc, roc_auc, avg_prec = compute_metrics(labels, ensemble_probs)
+print(f"Ensemble | Balanced Acc: {bal_acc:.4f} | Acc: {acc:.4f} | ROC-AUC: {roc_auc:.4f} | Avg Precision: {avg_prec:.4f}")
+ensemble_metrics = {"fold": "ensemble", "bal_acc": bal_acc, "acc": acc, "roc_auc": roc_auc, "avg_prec": avg_prec}
 
 # save metrics (per fold + ensemble) to the run folder
 results = pd.DataFrame(fold_metrics)
-metric_cols = ["bal_acc", "roc_auc", "avg_prec"]
+metric_cols = ["bal_acc", "acc", "roc_auc", "avg_prec"]
 
 summary = pd.DataFrame([
     {"fold": "mean", **results[metric_cols].mean().to_dict()},
