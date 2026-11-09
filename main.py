@@ -8,6 +8,7 @@ from dataset import bloodmnist_dataset, compute_mean_std
 from torch.utils.data import DataLoader
 from model import MyModel
 from trainer import train_model
+from torchvision.transforms import v2
 
 # 1. We need the arguments
 args = get_args()
@@ -25,6 +26,11 @@ for fold in range(5):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
+    train_transform = v2.Compose([
+        v2.RandomHorizontalFlip(),
+        v2.RandomVerticalFlip(),
+        v2.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1)
+    ])
     train_set = pd.read_csv(os.path.join(csv_dir, f"train_fold_{fold}.csv"))
     val_set = pd.read_csv(os.path.join(csv_dir, f"val_fold_{fold}.csv"))
 
@@ -32,7 +38,7 @@ for fold in range(5):
     mean, std = compute_mean_std(train_set)
     print(f"Mean: {mean.round(4)}, Std: {std.round(4)}")
 
-    train_dataset = bloodmnist_dataset(train_set, mean, std)
+    train_dataset = bloodmnist_dataset(train_set, mean, std, train_transform)
     val_dataset = bloodmnist_dataset(val_set, mean, std)
 
     # 4. Create dataloaders

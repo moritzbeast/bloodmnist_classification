@@ -31,7 +31,8 @@ def compute_metrics(labels, probs):
 def train_model(model, train_loader, val_loader, fold):
     model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+    optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.wd)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     os.makedirs(args.output_dir, exist_ok=True)
     best_bal_acc = -1
@@ -84,6 +85,8 @@ def train_model(model, train_loader, val_loader, fold):
                             "roc_auc": val_roc_auc, "avg_prec": val_avg_prec}
             torch.save(model.state_dict(), os.path.join(args.output_dir, f"best_model_fold_{fold}.pth"))
             print(f"New best model saved (Balanced Acc: {best_bal_acc:.4f})")
+
+        scheduler.step()
 
     plot_metrics(history, fold)
 

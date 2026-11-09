@@ -28,11 +28,12 @@ def compute_mean_std(dataset):
     return mean, std
 
 class bloodmnist_dataset(Dataset):
-    def __init__(self, dataset, mean, std):
+    def __init__(self, dataset, mean, std, transform=None):
         self.dataset = dataset
         # shape (3, 1, 1), so every channel is normalized with its own value
         self.mean = torch.tensor(mean, dtype=torch.float32).view(3, 1, 1)
         self.std = torch.tensor(std, dtype=torch.float32).view(3, 1, 1)
+        self.transform = transform
 
     def __len__(self):
         return (len(self.dataset))
@@ -41,6 +42,8 @@ class bloodmnist_dataset(Dataset):
         img = read_img(self.dataset["image_path"].iloc[index])
         # (H, W, C) -> (C, H, W), PyTorch expects the channels first
         img = torch.from_numpy(img).permute(2, 0, 1).float() / 255
+        if self.transform:
+            img = self.transform(img)
         img = (img - self.mean) / self.std
         name = (self.dataset["image_path"].iloc[index]).split("/")[-1]
         target = self.dataset["label"].iloc[index]
