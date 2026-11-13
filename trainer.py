@@ -149,10 +149,3 @@ def plot_metrics(history, fold):
     fig.tight_layout()
     fig.savefig(os.path.join(args.output_dir, f"metrics_fold_{fold}.png"), dpi=150)
     plt.close(fig)
-
-
-
-
-
-    
-

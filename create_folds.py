@@ -18,6 +18,7 @@ def load_image_data(dataset_path="data/Labeled", labels=("0", "1", "2", "3", "4"
     return pd.DataFrame(image_data, columns=["image_path", "label"])
 
 
+# fixed split seed: all runs use the same splits (training seed is set separately in args.py)
 def create_folds(csv_dir="data/CSVs", dataset_path="data/Labeled", size=128, n_splits=5, seed=42):
     # own folders for each image size
     dataset_path = os.path.join(dataset_path, str(size))

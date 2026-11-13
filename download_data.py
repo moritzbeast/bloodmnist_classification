@@ -34,7 +34,7 @@ def download_data(raw_dir="data/raw", dataset_path="data/Labeled", size=28):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download BloodMNIST and save it as png images")
-    parser.add_argument("-size", type=int, default=28, choices=[28, 64, 128, 224])
+    parser.add_argument("-img_size", type=int, default=28, choices=[28, 64, 128, 224])
     args = parser.parse_args()
 
     download_data(size=args.size)
