@@ -1,7 +1,7 @@
-from args import * 
+from args import *
 import pandas as pd
 import os
-from dataset import compute_mean_std, bloodmnist_dataset
+from dataset import compute_mean_std, bloodmnist_dataset, read_img
 from torch.utils.data import DataLoader
 from model import MyModel
 import torch
@@ -9,7 +9,6 @@ import numpy as np
 from trainer import compute_metrics
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from dataset import read_img
 
 # BloodMNIST label order
 CLASS_NAMES = ["basophil", "eosinophil", "erythroblast", "immature gran.",
@@ -23,7 +22,7 @@ test_set = pd.read_csv(os.path.join(csv_dir, "test.csv"))
 
 print(f"Evaluating run: {args.output_dir}")
 
-# use mac gpu
+# use mac gpu or cuda or cpu
 device = torch.device(
     "cuda" if torch.cuda.is_available()
     else "mps" if torch.backends.mps.is_available()
@@ -81,7 +80,7 @@ bal_acc, acc, roc_auc, avg_prec = compute_metrics(labels, ensemble_probs)
 print(f"Ensemble | Balanced Acc: {bal_acc:.4f} | Acc: {acc:.4f} | ROC-AUC: {roc_auc:.4f} | Avg Precision: {avg_prec:.4f}")
 ensemble_metrics = {"fold": "ensemble", "bal_acc": bal_acc, "acc": acc, "roc_auc": roc_auc, "avg_prec": avg_prec}
 
-# save metrics (per fold + ensemble) to the run folder
+# save metrics (per fold + ensemble) to the sessions folder
 results = pd.DataFrame(fold_metrics)
 metric_cols = ["bal_acc", "acc", "roc_auc", "avg_prec"]
 
