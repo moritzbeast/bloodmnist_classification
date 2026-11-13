@@ -8,7 +8,6 @@ class MyModel(torch.nn.Module):
     def __init__(self, backbone="resnet18"):
         super(MyModel,self).__init__()
 
-        # load weights pretrained on ImageNet
         if backbone == "resnet18":
             self.model = models.resnet18(weights=None)
 
